@@ -1,3 +1,52 @@
+# MySQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+---
+# MySQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: rootpassword
+            - name: MYSQL_DATABASE
+              value: bookstore
+            - name: MYSQL_USER
+              value: user
+            - name: MYSQL_PASSWORD
+              value: userpass
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+          emptyDir: {}
+---
+# PHP Bookstore Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,7 +62,30 @@ spec:
         app: php-bookstore
     spec:
       containers:
-      - name: php-bookstore
-        image: iyedhosni20/php-bookstore:latest  # Ensure this points to Docker Hub
-        ports:
-        - containerPort: 80
+        - name: php-bookstore
+          image: iyedhosni20/php-bookstore:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: DB_USER
+              value: user
+            - name: DB_PASSWORD
+              value: userpass
+            - name: DB_NAME
+              value: bookstore
+---
+# PHP Bookstore Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-bookstore-service
+spec:
+  selector:
+    app: php-bookstore
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 31702
+  type: NodePort
