@@ -25,6 +25,17 @@ spec:
       labels:
         app: mysql
     spec:
+      initContainers:
+        - name: init-db
+          image: mysql:5.7
+          command:
+            - "sh"
+            - "-c"
+            - "mysql -h mysql -u root -prootpassword bookstore < /scripts/database.sql"
+          volumeMounts:
+            - name: init-scripts
+              mountPath: /scripts
+              subPath: database.sql
       containers:
         - name: mysql
           image: mysql:5.7
@@ -45,6 +56,9 @@ spec:
       volumes:
         - name: mysql-data
           emptyDir: {}
+        - name: init-scripts
+          configMap:
+            name: database-scripts
 ---
 # PHP Bookstore Deployment
 apiVersion: apps/v1
