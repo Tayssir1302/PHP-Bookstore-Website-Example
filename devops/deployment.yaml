@@ -1,4 +1,6 @@
+# ==========================
 # MySQL Service
+# ==========================
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,7 +12,9 @@ spec:
     - port: 3306
       targetPort: 3306
 ---
+# ==========================
 # MySQL Deployment
+# ==========================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,17 +29,6 @@ spec:
       labels:
         app: mysql
     spec:
-      initContainers:
-        - name: init-db
-          image: mysql:5.7
-          command:
-            - "sh"
-            - "-c"
-            - "mysql -h mysql -u root -prootpassword bookstore < /scripts/database.sql"
-          volumeMounts:
-            - name: init-scripts
-              mountPath: /scripts
-              subPath: database.sql
       containers:
         - name: mysql
           image: mysql:5.7
@@ -56,11 +49,10 @@ spec:
       volumes:
         - name: mysql-data
           emptyDir: {}
-        - name: init-scripts
-          configMap:
-            name: database-scripts
 ---
+# ==========================
 # PHP Bookstore Deployment
+# ==========================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -90,7 +82,9 @@ spec:
             - name: DB_NAME
               value: bookstore
 ---
+# ==========================
 # PHP Bookstore Service
+# ==========================
 apiVersion: v1
 kind: Service
 metadata:
